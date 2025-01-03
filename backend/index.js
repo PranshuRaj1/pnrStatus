@@ -1,8 +1,5 @@
 import { Builder, By, until } from "selenium-webdriver";
-import fs from "fs";
-import { createWorker } from "tesseract.js";
 import sharp from "sharp";
-import { equationSolver } from "./helper.js";
 import { extractAndSolve } from "./test.js";
 
 async function solveCaptcha(driver) {
