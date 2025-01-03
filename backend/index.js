@@ -1,50 +1,80 @@
-import { Builder, By } from "selenium-webdriver";
-import { solveCaptchaInMemory, equationSolver } from "./helper.js";
+import { Builder, By, until } from "selenium-webdriver";
+import fs from "fs";
+import { createWorker } from "tesseract.js";
+import sharp from "sharp";
+import { equationSolver } from "./helper.js";
 
-/**
- * Automates fetching PNR status from IRCTC.
- * @param {string} pnrNumber - The PNR number to check.
- */
+async function solveCaptcha(driver) {
+  // Wait for the CAPTCHA image to be fully visible
+  const captchaElement = await driver.wait(
+    until.elementIsVisible(await driver.findElement(By.id("CaptchaImgID"))),
+    5000
+  );
+
+  // Get the bounding rectangle of the CAPTCHA image
+  const location = await captchaElement.getRect();
+
+  if (location.width === 0 || location.height === 0) {
+    throw new Error("CAPTCHA image has zero width or height. Retrying...");
+  }
+
+  // Take a screenshot of the entire page
+  const screenshot = await driver.takeScreenshot();
+  const screenshotBuffer = Buffer.from(screenshot, "base64");
+
+  // Crop the CAPTCHA image from the screenshot using sharp
+  const croppedCaptchaPath = "cropped_captcha.png";
+  await sharp(screenshotBuffer)
+    .extract({
+      left: Math.floor(location.x),
+      top: Math.floor(location.y),
+      width: Math.floor(location.width),
+      height: Math.floor(location.height),
+    })
+    .toFile(croppedCaptchaPath);
+
+  // Initialize Tesseract.js worker for OCR
+  const worker = createWorker();
+  await worker.load();
+  await worker.loadLanguage("eng");
+  await worker.initialize("eng");
+
+  // Perform OCR on the cropped CAPTCHA image
+  const {
+    data: { text },
+  } = await worker.recognize(croppedCaptchaPath);
+  await worker.terminate();
+
+  const cleanedText = text.replace(/\s+/g, "").trim();
+  console.log("Extracted CAPTCHA Text:", cleanedText);
+  return cleanedText;
+}
+
 async function fetchPnrStatus(pnrNumber) {
   const driver = await new Builder().forBrowser("chrome").build();
 
   try {
-    // Navigate to the IRCTC Common Captcha page
     await driver.get(
       "https://www.indianrail.gov.in/enquiry/PNR/PnrEnquiry.html?locale=en"
     );
 
-    // Input the PNR number
     const pnrInput = await driver.findElement(By.id("inputPnrNo"));
     await pnrInput.sendKeys(pnrNumber);
 
     const submitButton = await driver.findElement(By.id("modal1"));
     await submitButton.click();
 
-    // Get the CAPTCHA image URL
-    const captchaImageElement = await driver.findElement(By.id("CaptchaImgID"));
-    const captchaSrc = await captchaImageElement.getAttribute("src");
-    const captchaImageUrl = new URL(captchaSrc, "https://www.indianrail.gov.in")
-      .href;
-
-    console.log("Captcha Image URL:", captchaImageUrl);
-
-    // Solve the CAPTCHA
-    const captchaText = await solveCaptchaInMemory(captchaImageUrl);
+    const captchaText = await solveCaptcha(driver);
     const captchaResult = equationSolver(captchaText);
     console.log("Resolved CAPTCHA Result:", captchaResult);
 
-    // Input the CAPTCHA result
     const captchaInput = await driver.findElement(By.id("inputCaptcha"));
     await captchaInput.sendKeys(captchaResult);
-
-    // Submit the form
 
     const submitButton1 = await driver.findElement(By.id("submitPnrNo"));
     await submitButton1.click();
 
-    // Wait for results and extract them
-    await driver.sleep(5000); // Adjust as needed
+    await driver.sleep(5000);
     const result = await driver.findElement(By.id("resultDiv")).getText();
     console.log("PNR Status:", result);
   } catch (error) {
@@ -54,6 +84,5 @@ async function fetchPnrStatus(pnrNumber) {
   }
 }
 
-// Example usage
-const pnrNumber = "6920398852"; // Replace with your PNR number
+const pnrNumber = "6920398852";
 fetchPnrStatus(pnrNumber);
