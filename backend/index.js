@@ -3,6 +3,7 @@ import fs from "fs";
 import { createWorker } from "tesseract.js";
 import sharp from "sharp";
 import { equationSolver } from "./helper.js";
+import { extractAndSolve } from "./test.js";
 
 async function solveCaptcha(driver) {
   // Wait for the CAPTCHA image to be fully visible
@@ -36,6 +37,8 @@ async function solveCaptcha(driver) {
     .toFile(croppedCaptchaPath);
 
   console.log("```````````````````````````````````````````````````````````");
+
+  return extractAndSolve(croppedCaptchaPath);
 }
 
 async function fetchPnrStatus(pnrNumber) {
@@ -52,8 +55,8 @@ async function fetchPnrStatus(pnrNumber) {
     const submitButton = await driver.findElement(By.id("modal1"));
     await submitButton.click();
 
-    const captchaText = await solveCaptcha(driver);
-    const captchaResult = equationSolver(captchaText);
+    const captchaResult = await solveCaptcha(driver);
+
     console.log("Resolved CAPTCHA Result:", captchaResult);
 
     const captchaInput = await driver.findElement(By.id("inputCaptcha"));
