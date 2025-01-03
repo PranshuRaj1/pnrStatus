@@ -14,6 +14,8 @@ async function solveCaptcha(driver) {
   // Get the bounding rectangle of the CAPTCHA image
   const location = await captchaElement.getRect();
 
+  console.log(location);
+
   if (location.width === 0 || location.height === 0) {
     throw new Error("CAPTCHA image has zero width or height. Retrying...");
   }
@@ -24,14 +26,7 @@ async function solveCaptcha(driver) {
 
   // Crop the CAPTCHA image from the screenshot using sharp
   const croppedCaptchaPath = "cropped_captcha.png";
-  await sharp(screenshotBuffer)
-    .extract({
-      left: Math.floor(location.x),
-      top: Math.floor(location.y),
-      width: Math.floor(location.width),
-      height: Math.floor(location.height),
-    })
-    .toFile(croppedCaptchaPath);
+  await sharp(screenshotBuffer).toFile(croppedCaptchaPath);
 
   // Initialize Tesseract.js worker for OCR
   const worker = createWorker();
