@@ -26,7 +26,14 @@ async function solveCaptcha(driver) {
 
   // Crop the CAPTCHA image from the screenshot using sharp
   const croppedCaptchaPath = "cropped_captcha.png";
-  await sharp(screenshotBuffer).toFile(croppedCaptchaPath);
+  await sharp(screenshotBuffer)
+    .extract({
+      left: 650,
+      top: 275,
+      width: 300,
+      height: 300,
+    })
+    .toFile(croppedCaptchaPath);
 
   // Initialize Tesseract.js worker for OCR
   const worker = createWorker();
