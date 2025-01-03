@@ -28,28 +28,14 @@ async function solveCaptcha(driver) {
   const croppedCaptchaPath = "cropped_captcha.png";
   await sharp(screenshotBuffer)
     .extract({
-      left: 650,
-      top: 275,
-      width: 300,
-      height: 300,
+      left: 1112,
+      top: 198,
+      width: 200,
+      height: 75,
     })
     .toFile(croppedCaptchaPath);
 
-  // Initialize Tesseract.js worker for OCR
-  const worker = createWorker();
-  await worker.load();
-  await worker.loadLanguage("eng");
-  await worker.initialize("eng");
-
-  // Perform OCR on the cropped CAPTCHA image
-  const {
-    data: { text },
-  } = await worker.recognize(croppedCaptchaPath);
-  await worker.terminate();
-
-  const cleanedText = text.replace(/\s+/g, "").trim();
-  console.log("Extracted CAPTCHA Text:", cleanedText);
-  return cleanedText;
+  console.log("```````````````````````````````````````````````````````````");
 }
 
 async function fetchPnrStatus(pnrNumber) {

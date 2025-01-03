@@ -26,20 +26,23 @@ export function equationSolver(s) {
 
   const first = Number.parseInt(firstNumber);
 
-  console.log("first" + first);
+  // console.log("first" + first);
 
   const second = Number.parseInt(secondNumber);
 
-  console.log("second" + second);
+  // console.log("second" + second);
 
   if (isNaN(first) || isNaN(second)) {
     throw new Error("Invalid equation format.");
   }
 
   // Perform the arithmetic operation
+  // console.log(operator);
+
   if (operator === "+") {
     return first + second;
   }
+  // console.log(first - second);
 
   return first - second;
 }
