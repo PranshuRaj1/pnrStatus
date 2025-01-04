@@ -1,6 +1,7 @@
 import { Builder, By, until } from "selenium-webdriver";
 import sharp from "sharp";
 import { extractAndSolve } from "./test.js";
+import fs from 'fs'
 
 async function solveCaptcha(driver) {
   // Wait for the CAPTCHA image to be fully visible
@@ -12,7 +13,7 @@ async function solveCaptcha(driver) {
   // Get the bounding rectangle of the CAPTCHA image
   const location = await captchaElement.getRect();
 
-  console.log(location);
+  console.log("the location is",location);
 
   if (location.width === 0 || location.height === 0) {
     throw new Error("CAPTCHA image has zero width or height. Retrying...");
@@ -21,21 +22,36 @@ async function solveCaptcha(driver) {
   // Take a screenshot of the entire page
   const screenshot = await driver.takeScreenshot();
   const screenshotBuffer = Buffer.from(screenshot, "base64");
+  fs.writeFileSync('screenshot.png', screenshotBuffer);
 
   // Crop the CAPTCHA image from the screenshot using sharp
-  const croppedCaptchaPath = "cropped_captcha.png";
+  const metadata = await sharp(screenshotBuffer).metadata();
+  console.log("Image dimensions:", metadata.width, metadata.height);
+
+// Adjust these values based on metadata output
+const extractArea = {
+  left: 706,
+  top: 140,
+  width: 180,
+  height: 60,
+};
+
+if (
+  extractArea.left + extractArea.width <= metadata.width &&
+  extractArea.top + extractArea.height <= metadata.height
+) {
+
   await sharp(screenshotBuffer)
-    .extract({
-      left: 1112,
-      top: 198,
-      width: 200,
-      height: 75,
-    })
-    .toFile(croppedCaptchaPath);
+    .extract(extractArea)
+    .toFile("cropped_captcha.png");
+    console.log("Success!")
+} else {
+  console.error("Invalid extract area:", extractArea);
+}
 
   console.log("```````````````````````````````````````````````````````````");
 
-  return extractAndSolve(croppedCaptchaPath);
+  return extractAndSolve("cropped_captcha.png");
 }
 
 async function fetchPnrStatus(pnrNumber) {
@@ -63,7 +79,7 @@ async function fetchPnrStatus(pnrNumber) {
     await submitButton1.click();
 
     await driver.sleep(5000);
-    const result = await driver.findElement(By.id("resultDiv")).getText();
+    const result = await driver.findElement(By.id("resultDiv")).getTaat();
     console.log("PNR Status:", result);
   } catch (error) {
     console.error("Error fetching PNR status:", error);
