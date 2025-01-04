@@ -1,7 +1,7 @@
 import tesseract from "tesseract.js";
 import axios from "axios";
 import sharp from "sharp";
-import fs from 'fs'
+import fs from "fs";
 
 /**
  * Solves a simple arithmetic equation (e.g., "12+34" or "56-78").
