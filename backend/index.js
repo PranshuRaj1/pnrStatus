@@ -18,6 +18,19 @@ async function solveCaptcha(driver) {
     throw new Error("CAPTCHA image has zero width or height. Retrying...");
   }
 
+  // Get the device pixel ratio (DPR)
+  const devicePixelRatio = await driver.executeScript("return window.devicePixelRatio;");
+  console.log("Device Pixel Ratio (DPR):", devicePixelRatio);
+
+  // Adjust rectangle dimensions based on DPR
+  const scaledRect = {
+    left: Math.round(rect.x * devicePixelRatio),
+    top: Math.round(rect.y * devicePixelRatio),
+    width: Math.round(rect.width * devicePixelRatio),
+    height: Math.round(rect.height * devicePixelRatio),
+  };
+  console.log("Scaled rectangle:", scaledRect);
+
   // Take a screenshot of the entire page
   const screenshot = await driver.takeScreenshot();
   const screenshotBuffer = Buffer.from(screenshot, "base64");
@@ -25,25 +38,16 @@ async function solveCaptcha(driver) {
   // Save the screenshot for debugging
   fs.writeFileSync("screenshot.png", screenshotBuffer);
 
-  // Calculate cropping area dynamically
-  const extractArea = {
-    left: 1977, // X-coordinate of the CAPTCHA
-    top: 206, // Y-coordinate of the CAPTCHA
-    width: 208, // Width of the CAPTCHA
-    height: 100, // Height of the CAPTCHA
-  };
-  console.log("Calculated extract area:", extractArea);
-
   // Crop the CAPTCHA image from the screenshot using sharp
   const metadata = await sharp(screenshotBuffer).metadata();
   console.log("Image dimensions:", metadata.width, metadata.height);
 
   if (
-    extractArea.left + extractArea.width <= metadata.width &&
-    extractArea.top + extractArea.height <= metadata.height
+    scaledRect.left + scaledRect.width <= metadata.width &&
+    scaledRect.top + scaledRect.height <= metadata.height
   ) {
     await sharp(screenshotBuffer)
-      .extract(extractArea)
+      .extract(scaledRect)
       .toFile("cropped_captcha.png");
     console.log("CAPTCHA cropped successfully!");
   } else {
@@ -62,7 +66,7 @@ async function fetchPnrStatus(pnrNumber) {
     "--disable-gpu", // Disable GPU for stability
     "--no-sandbox", // Recommended for certain environments
     "--start-maximized", // Start in full screen
-    "--window-size=1920,1080" // Set a large resolution for headless mode
+    "--window-size=1920,1080" // Set a consistent resolution for headless mode
   );
 
   const driver = await new Builder()
@@ -74,6 +78,9 @@ async function fetchPnrStatus(pnrNumber) {
     await driver.get(
       "https://www.indianrail.gov.in/enquiry/PNR/PnrEnquiry.html?locale=en"
     );
+
+    // Set a consistent viewport size
+    await driver.manage().window().setRect({ width: 1920, height: 1080 });
 
     const pnrInput = await driver.findElement(By.id("inputPnrNo"));
     await pnrInput.sendKeys(pnrNumber);
@@ -92,7 +99,7 @@ async function fetchPnrStatus(pnrNumber) {
     await submitButton1.click();
 
     await driver.sleep(5000);
-    const result = await driver.findElement(By.id("resultDiv")).getTaat();
+    const result = await driver.findElement(By.id("resultDiv")).getText();
     console.log("PNR Status:", result);
   } catch (error) {
     console.error("Error fetching PNR status:", error);
