@@ -27,10 +27,10 @@ async function solveCaptcha(driver) {
 
   // Calculate cropping area dynamically
   const extractArea = {
-    left: 1126, // X-coordinate of the CAPTCHA
-    top: 200, // Y-coordinate of the CAPTCHA
-    width: 155, // Width of the CAPTCHA
-    height: 60, // Height of the CAPTCHA
+    left: 1977, // X-coordinate of the CAPTCHA
+    top: 206, // Y-coordinate of the CAPTCHA
+    width: 208, // Width of the CAPTCHA
+    height: 100, // Height of the CAPTCHA
   };
   console.log("Calculated extract area:", extractArea);
 
@@ -57,7 +57,13 @@ async function solveCaptcha(driver) {
 
 async function fetchPnrStatus(pnrNumber) {
   const options = new chrome.Options();
-  options.addArguments("--headless", "--disable-gpu", "--no-sandbox");
+  options.addArguments(
+    "--headless", // Run in headless mode
+    "--disable-gpu", // Disable GPU for stability
+    "--no-sandbox", // Recommended for certain environments
+    "--start-maximized", // Start in full screen
+    "--window-size=1920,1080" // Set a large resolution for headless mode
+  );
 
   const driver = await new Builder()
     .forBrowser("chrome")
