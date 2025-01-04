@@ -1,6 +1,7 @@
 import tesseract from "tesseract.js";
 import axios from "axios";
 import sharp from "sharp";
+import fs from 'fs'
 
 /**
  * Solves a simple arithmetic equation (e.g., "12+34" or "56-78").
@@ -8,43 +9,27 @@ import sharp from "sharp";
  * @returns {number} - The result of the equation.
  */
 export function equationSolver(s) {
-  let idx = 0;
-  let operator = "";
+  // Use a regular expression to extract the equation (supports + and - operators)
+  const equationRegex = /(\d+)\s*([\+\-])\s*(\d+)/;
+  const match = s.match(equationRegex);
 
-  // Identify the operator and its position
-  for (let i = 0; i < s.length; i++) {
-    if (s.charAt(i) === "+" || s.charAt(i) === "-") {
-      idx = i;
-      operator = s.charAt(i);
-      break;
-    }
+  if (!match) {
+    throw new Error("No valid equation found in the string.");
   }
 
-  // Split the string into two numbers based on the operator position
-  const firstNumber = s.substring(0, idx);
-  const secondNumber = s.substring(idx + 1);
-
-  const first = Number.parseInt(firstNumber);
-
-  // console.log("first" + first);
-
-  const second = Number.parseInt(secondNumber);
-
-  // console.log("second" + second);
-
-  if (isNaN(first) || isNaN(second)) {
-    throw new Error("Invalid equation format.");
-  }
+  // Extract the numbers and operator from the match
+  const first = Number.parseInt(match[1], 10);
+  const operator = match[2];
+  const second = Number.parseInt(match[3], 10);
 
   // Perform the arithmetic operation
-  // console.log(operator);
-
   if (operator === "+") {
     return first + second;
+  } else if (operator === "-") {
+    return first - second;
   }
-  // console.log(first - second);
 
-  return first - second;
+  throw new Error("Unsupported operator.");
 }
 
 /**
@@ -63,11 +48,10 @@ export async function solveCaptchaInMemory(url) {
       .grayscale() // Convert to grayscale
       .threshold(128) // Apply Otsu's threshold (binarization)
       .toBuffer(); // Get the processed image as a buffer
-
     // Perform OCR on the processed image buffer
     const result = await tesseract.recognize(processedImageBuffer, "eng", {
       logger: (info) => console.log(info), // Optional: Logs OCR progress
-      tessedit_char_whitelist: "0123456789+-", // Whitelist allowed characters
+      tessedit_char_whitelist: "0123456789+-s", // Whitelist allowed characters
     });
 
     // Clean up the result (remove extra whitespace)
