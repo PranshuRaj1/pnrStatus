@@ -24,9 +24,9 @@ async function solveCaptcha(driver) {
 
   // Adjust rectangle dimensions based on DPR
   const scaledRect = {
-    left: Math.round(rect.x * devicePixelRatio),
+    left: 1000,
     top: Math.round(rect.y * devicePixelRatio),
-    width: Math.round(rect.width * devicePixelRatio),
+    width: 800,
     height: 400,
   };
   console.log("Scaled rectangle:", scaledRect);
