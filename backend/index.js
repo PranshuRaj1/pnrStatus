@@ -62,7 +62,7 @@ async function solveCaptcha(driver) {
 async function fetchPnrStatus(pnrNumber) {
   const options = new chrome.Options();
   options.addArguments(
-    "--headless", // Run in headless mode
+    // "--headless", // Run in headless mode
     "--disable-gpu", // Disable GPU for stability
     "--no-sandbox", // Recommended for certain environments
     "--start-maximized", // Start in full screen
@@ -98,12 +98,30 @@ async function fetchPnrStatus(pnrNumber) {
     const submitButton1 = await driver.findElement(By.id("submitPnrNo"));
     await submitButton1.click();
 
-    await driver.sleep(5000);
+    // Wait for the PNR status to load
+    await driver.sleep(1000);
+
+    // Open a new tab and navigate to Google
+    await driver.executeScript(`window.open("https://www.indianrail.gov.in/enquiry/CommonCaptcha?inputPnrNo=${pnrNumber}&inputPage=PNR&language=en", '_blank');`);
+
+    // Switch to the new tab
+    const tabs = await driver.getAllWindowHandles();
+    await driver.switchTo().window(tabs[1]);
+    
+    // Wait for the page to load completely
+    await driver.sleep(1000);
+
+    // Locate the <pre> tag and extract its text content
+    const preTagElement = await driver.findElement(By.css("pre"));
+    const preTagData = await preTagElement.getText();
+
+    // Log the data to the console
+    console.log("Data inside <pre> tag:", preTagData);
+
   } catch (error) {
     console.error("Error fetching PNR status:", error);
   } finally {
     console.log("success")
-    await driver.quit();
   }
 }
 
