@@ -27,7 +27,7 @@ async function solveCaptcha(driver) {
     left: Math.round(rect.x * devicePixelRatio),
     top: Math.round(rect.y * devicePixelRatio),
     width: Math.round(rect.width * devicePixelRatio),
-    height: Math.round(rect.height * devicePixelRatio),
+    height: 400,
   };
   console.log("Scaled rectangle:", scaledRect);
 
@@ -99,11 +99,10 @@ async function fetchPnrStatus(pnrNumber) {
     await submitButton1.click();
 
     await driver.sleep(5000);
-    const result = await driver.findElement(By.id("resultDiv")).getText();
-    console.log("PNR Status:", result);
   } catch (error) {
     console.error("Error fetching PNR status:", error);
   } finally {
+    console.log("success")
     await driver.quit();
   }
 }
