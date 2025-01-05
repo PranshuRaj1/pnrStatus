@@ -62,7 +62,7 @@ async function solveCaptcha(driver) {
 async function fetchPnrStatus(pnrNumber) {
   const options = new chrome.Options();
   options.addArguments(
-    // "--headless", // Run in headless mode
+    "--headless", // Run in headless mode
     "--disable-gpu", // Disable GPU for stability
     "--no-sandbox", // Recommended for certain environments
     "--start-maximized", // Start in full screen
