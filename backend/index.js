@@ -7,8 +7,8 @@ import chrome from "selenium-webdriver/chrome.js";
 async function solveCaptcha(driver) {
   // Wait for the CAPTCHA image to be fully visible
   const captchaElement = await driver.wait(
-    until.elementIsVisible(await driver.findElement(By.id("myModal"))),
-    2000
+    until.elementIsVisible(await driver.findElement(By.id("CaptchaImgID"))),
+    3000
   );
 
   const scaledRect = {
@@ -21,12 +21,6 @@ async function solveCaptcha(driver) {
   // Take a screenshot of the entire page
   const screenshot = await driver.takeScreenshot();
   const screenshotBuffer = Buffer.from(screenshot, "base64");
-
-  // Save the screenshot for debugging
-  fs.writeFileSync("screenshot.png", screenshotBuffer);
-
-  
-
   
     await sharp(screenshotBuffer)
       .extract(scaledRect)
@@ -37,22 +31,7 @@ async function solveCaptcha(driver) {
   return extractAndSolve("cropped_captcha.png");
 }
 
-export async function fetchPnrStatus(pnrNumber) {
-  const options = new chrome.Options();
-  options.addArguments(
-    "--headless", // Run in headless mode
-    "--disable-gpu", // Disable GPU for stability
-    "--no-sandbox", // Recommended for certain environments
-    "--start-maximized", // Start in full screen
-    "--window-size=1920,1080", // Set a consistent resolution for headless mode
-    "--enable-unsafe-swiftshader"
-  );
-
-  const driver = await new Builder()
-    .forBrowser("chrome")
-    .setChromeOptions(options)
-    .build();
-
+export async function fetchPnrCookie(pnrNumber,driver) {
   try {
     await driver.get(
       "https://www.indianrail.gov.in/enquiry/PNR/PnrEnquiry.html?locale=en"
@@ -66,7 +45,7 @@ export async function fetchPnrStatus(pnrNumber) {
 
     const submitButton = await driver.findElement(By.id("modal1"));
     await submitButton.click();
-    console.log("Clicken submit button");
+    console.log("Clicked submit button");
     const captchaResult = await solveCaptcha(driver);
 
     console.log("Resolved CAPTCHA Result:", captchaResult);
@@ -76,21 +55,26 @@ export async function fetchPnrStatus(pnrNumber) {
 
     const submitButton1 = await driver.findElement(By.id("submitPnrNo"));
     await submitButton1.click();
+    //CAPTCHA SOLVED and Cookie obtained
 
-    // Open a new tab and navigate to Google
-    await driver.executeScript(`window.open("https://www.indianrail.gov.in/enquiry/CommonCaptcha?inputPnrNo=${pnrNumber}&inputPage=PNR&language=en", '_blank');`);
-
-    // Switch to the new tab
-    const tabs = await driver.getAllWindowHandles();
-    await driver.switchTo().window(tabs[1]);
-
-    // Locate the <pre> tag and extract its text content
-    return await driver.findElement(By.css("pre")).getText();
+    
 
   } catch (error) {
     console.error("Error fetching PNR status:", error);
   }
 }
 
+export async function fetchPnrStatus(pnrNumber,driver){
+  // Open a new tab and navigate to Google
+  await driver.executeScript(`window.open("https://www.indianrail.gov.in/enquiry/CommonCaptcha?inputPnrNo=${pnrNumber}&inputPage=PNR&language=en", '_blank');`);
+
+  // Switch to the new tab
+  const tabs = await driver.getAllWindowHandles();
+  await driver.switchTo().window(tabs[1]);
+
+  // Locate the <pre> tag and extract its text content
+  return await driver.findElement(By.css("pre")).getText();
+
+}
 // const pnrNumber = "6920398852";
 // fetchPnrStatus(pnrNumber);
