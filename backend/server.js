@@ -6,6 +6,8 @@ import chrome from 'selenium-webdriver/chrome.js';
 const app = express();
 const port = 3000;
 
+const samplePNR=2426776616;
+
 let driver; // Declare the driver variable in the global scope
 
 app.use(express.json());
@@ -18,6 +20,14 @@ app.get('/', async (req, res) => {
     }
 
     const ans = await fetchPnrStatus(data.pnr, driver); // Pass the driver to fetchPnrStatus
+    const tabs = await driver.getAllWindowHandles(); // Get all open tabs
+
+    if (tabs.length > 1) {
+      await driver.switchTo().window(tabs[1]); // Switch to the second tab
+      await driver.close(); // Close the second tab
+      await driver.switchTo().window(tabs[0]); // Switch back to the original tab
+    }
+
     res.send(ans);
   } catch (error) {
     console.error('Error:', error);
@@ -29,7 +39,7 @@ app.listen(port, async () => {
   try {
     const options = new chrome.Options();
     options.addArguments(
-    //   '--headless', // Run in headless mode
+      // '--headless', // Run in headless mode
       '--disable-gpu', // Disable GPU for stability
       '--no-sandbox', // Recommended for certain environments
       '--start-maximized', // Start in full screen
@@ -45,17 +55,17 @@ app.listen(port, async () => {
     console.log('Selenium driver started.');
 
     // Run fetchPnrCookie on server startup
-    await fetchPnrCookie(6920398852, driver);
+    await fetchPnrCookie(samplePNR, driver);
 
     // Schedule fetchPnrCookie to run every 2 minutes
     setInterval(async () => {
       try {
         console.log('Refreshing cookies...');
-        await fetchPnrCookie(6920398852, driver);
+        await fetchPnrCookie(samplePNR, driver);
       } catch (error) {
         console.error('Error refreshing cookies:', error);
       }
-    }, 2 * 60 * 1000); // 2 minutes in milliseconds
+    }, 20000); // 
 
     console.log(`Server is running on http://localhost:${port}`);
   } catch (error) {

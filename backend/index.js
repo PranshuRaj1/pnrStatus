@@ -33,6 +33,8 @@ async function solveCaptcha(driver) {
 
 export async function fetchPnrCookie(pnrNumber,driver) {
   try {
+    const tabs = await driver.getAllWindowHandles();
+    await driver.switchTo().window(tabs[0])
     await driver.get(
       "https://www.indianrail.gov.in/enquiry/PNR/PnrEnquiry.html?locale=en"
     );
