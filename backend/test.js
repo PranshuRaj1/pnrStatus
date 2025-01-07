@@ -17,6 +17,7 @@ export async function extractAndSolve(imageFileName) {
     } = await Tesseract.recognize(imagePath, "eng", {
       logger: (m) => {}, // Optional: Logs progress
     });
+    console.log("Detected Text: ",text)
     const ans = equationSolver(text);
     return ans;
   } catch (error) {
