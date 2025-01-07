@@ -65,7 +65,7 @@ app.listen(port, async () => {
       } catch (error) {
         console.error('Error refreshing cookies:', error);
       }
-    }, 2*60*1000); // 
+    }, 5*60*1000); // 
 
     console.log(`Server is running on http://localhost:${port}`);
   } catch (error) {

@@ -44,10 +44,7 @@ export async function fetchPnrCookie(pnrNumber,driver,startup) {
       await driver.switchTo().window(tabs[0])
       driver.navigate().refresh()
     }
-   
     
-    
-    // Set a consistent viewport size
 
     const pnrInput = await driver.findElement(By.id("inputPnrNo"));
     await pnrInput.sendKeys(pnrNumber);
@@ -56,8 +53,8 @@ export async function fetchPnrCookie(pnrNumber,driver,startup) {
     // "submitPnrNo"
     await submitButton.click();
     console.log("Clicked submit button");
-    const captchaResult = await solveCaptcha(driver);
 
+    const captchaResult = await solveCaptcha(driver);
     console.log("Resolved CAPTCHA Result:", captchaResult);
 
     const captchaInput = await driver.findElement(By.id("inputCaptcha"));
@@ -70,7 +67,7 @@ export async function fetchPnrCookie(pnrNumber,driver,startup) {
     
 
   } catch (error) {
-    console.error("Error fetching PNR status:", error);
+    console.log("Error fetching PNR status:", error);
   }
 }
 

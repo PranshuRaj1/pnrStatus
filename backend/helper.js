@@ -9,9 +9,12 @@ import fs from "fs";
  * @returns {number} - The result of the equation.
  */
 export function equationSolver(s) {
+  // Split the string at the '=' and take only the part before it
+  const beforeEqual = s.split('=')[0];
+
   // Use a regular expression to extract the equation (supports + and - operators)
   const equationRegex = /(\d+)\s*([\+\-])\s*(\d+)/;
-  const match = s.match(equationRegex);
+  const match = beforeEqual.match(equationRegex);
 
   if (!match) {
     throw new Error("No valid equation found in the string.");
@@ -31,6 +34,7 @@ export function equationSolver(s) {
 
   throw new Error("Unsupported operator.");
 }
+
 
 /**
  * Fetches the CAPTCHA image and extracts the text using Tesseract.js.
