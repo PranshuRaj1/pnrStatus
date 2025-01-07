@@ -31,21 +31,29 @@ async function solveCaptcha(driver) {
   return extractAndSolve("cropped_captcha.png");
 }
 
-export async function fetchPnrCookie(pnrNumber,driver) {
+export async function fetchPnrCookie(pnrNumber,driver,startup) {
   try {
-    const tabs = await driver.getAllWindowHandles();
-    await driver.switchTo().window(tabs[0])
-    await driver.get(
-      "https://www.indianrail.gov.in/enquiry/PNR/PnrEnquiry.html?locale=en"
-    );
+    if(startup){
+      await driver.get(
+        "https://www.indianrail.gov.in/enquiry/PNR/PnrEnquiry.html?locale=en"
+      );
+      await driver.manage().window().setRect({ width: 1920, height: 1080 });
+    }
+    else{
+      const tabs = await driver.getAllWindowHandles();
+      await driver.switchTo().window(tabs[0])
+      driver.navigate().refresh()
+    }
+   
+    
     
     // Set a consistent viewport size
-    await driver.manage().window().setRect({ width: 1920, height: 1080 });
 
     const pnrInput = await driver.findElement(By.id("inputPnrNo"));
     await pnrInput.sendKeys(pnrNumber);
-
+    
     const submitButton = await driver.findElement(By.id("modal1"));
+    // "submitPnrNo"
     await submitButton.click();
     console.log("Clicked submit button");
     const captchaResult = await solveCaptcha(driver);

@@ -39,7 +39,7 @@ app.listen(port, async () => {
   try {
     const options = new chrome.Options();
     options.addArguments(
-      // '--headless', // Run in headless mode
+      '--headless', // Run in headless mode
       '--disable-gpu', // Disable GPU for stability
       '--no-sandbox', // Recommended for certain environments
       '--start-maximized', // Start in full screen
@@ -55,17 +55,17 @@ app.listen(port, async () => {
     console.log('Selenium driver started.');
 
     // Run fetchPnrCookie on server startup
-    await fetchPnrCookie(samplePNR, driver);
+    await fetchPnrCookie(samplePNR, driver,true);
 
     // Schedule fetchPnrCookie to run every 2 minutes
     setInterval(async () => {
       try {
         console.log('Refreshing cookies...');
-        await fetchPnrCookie(samplePNR, driver);
+        await fetchPnrCookie(samplePNR, driver,false);
       } catch (error) {
         console.error('Error refreshing cookies:', error);
       }
-    }, 20000); // 
+    }, 2*60*1000); // 
 
     console.log(`Server is running on http://localhost:${port}`);
   } catch (error) {
