@@ -15,9 +15,11 @@ export async function extractAndSolve(imageFileName) {
     const {
       data: { text },
     } = await Tesseract.recognize(imagePath, "eng", {
-      logger: (m) => {}, // Optional: Logs progress
+      logger: (m) => {
+        // Optional: Logs progress
+      },
     });
-    console.log("Detected Text: ",text)
+    console.log("Detected Text: ", text);
     const ans = equationSolver(text);
     return ans;
   } catch (error) {

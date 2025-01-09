@@ -14,41 +14,39 @@ async function solveCaptcha(driver) {
   const scaledRect = {
     left: 1000,
     top: 0,
-    width: 800,
+    width: 1200,
     height: 400,
   };
 
   // Take a screenshot of the entire page
   const screenshot = await driver.takeScreenshot();
   const screenshotBuffer = Buffer.from(screenshot, "base64");
-  
-    await sharp(screenshotBuffer)
-      .extract(scaledRect)
-      .toFile("cropped_captcha.png");
 
-    console.log("CAPTCHA cropped successfully!");
+  await sharp(screenshotBuffer)
+    .extract(scaledRect)
+    .toFile("cropped_captcha.png");
+
+  console.log("CAPTCHA cropped successfully!");
 
   return extractAndSolve("cropped_captcha.png");
 }
 
-export async function fetchPnrCookie(pnrNumber,driver,startup) {
+export async function fetchPnrCookie(pnrNumber, driver, startup) {
   try {
-    if(startup){
+    if (startup) {
       await driver.get(
         "https://www.indianrail.gov.in/enquiry/PNR/PnrEnquiry.html?locale=en"
       );
       await driver.manage().window().setRect({ width: 1920, height: 1080 });
-    }
-    else{
+    } else {
       const tabs = await driver.getAllWindowHandles();
-      await driver.switchTo().window(tabs[0])
-      driver.navigate().refresh()
+      await driver.switchTo().window(tabs[0]);
+      driver.navigate().refresh();
     }
-    
 
     const pnrInput = await driver.findElement(By.id("inputPnrNo"));
     await pnrInput.sendKeys(pnrNumber);
-    
+
     const submitButton = await driver.findElement(By.id("modal1"));
     // "submitPnrNo"
     await submitButton.click();
@@ -63,17 +61,16 @@ export async function fetchPnrCookie(pnrNumber,driver,startup) {
     const submitButton1 = await driver.findElement(By.id("submitPnrNo"));
     await submitButton1.click();
     //CAPTCHA SOLVED and Cookie obtained
-
-    
-
   } catch (error) {
     console.log("Error fetching PNR status:", error);
   }
 }
 
-export async function fetchPnrStatus(pnrNumber,driver){
+export async function fetchPnrStatus(pnrNumber, driver) {
   // Open a new tab and navigate to Google
-  await driver.executeScript(`window.open("https://www.indianrail.gov.in/enquiry/CommonCaptcha?inputPnrNo=${pnrNumber}&inputPage=PNR&language=en", '_blank');`);
+  await driver.executeScript(
+    `window.open("https://www.indianrail.gov.in/enquiry/CommonCaptcha?inputPnrNo=${pnrNumber}&inputPage=PNR&language=en", '_blank');`
+  );
 
   // Switch to the new tab
   const tabs = await driver.getAllWindowHandles();
@@ -81,7 +78,7 @@ export async function fetchPnrStatus(pnrNumber,driver){
 
   // Locate the <pre> tag and extract its text content
   return await driver.findElement(By.css("pre")).getText();
-
 }
 // const pnrNumber = "6920398852";
-// fetchPnrStatus(pnrNumber);
+// const resultOf = fetchPnrStatus(pnrNumber);
+// console.log(resultOf);
