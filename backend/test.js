@@ -1,7 +1,7 @@
-import Tesseract from "tesseract.js";
-import path from "path";
-import { fileURLToPath } from "url";
-import { equationSolver } from "./helper.js";
+import Tesseract from 'tesseract.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { equationSolver } from './helper.js';
 
 // Get the current directory path
 const __filename = fileURLToPath(import.meta.url);
@@ -14,12 +14,12 @@ export async function extractAndSolve(imageFileName) {
   try {
     const {
       data: { text },
-    } = await Tesseract.recognize(imagePath, "eng", {
+    } = await Tesseract.recognize(imagePath, 'eng', {
       logger: (m) => {
         // Optional: Logs progress
       },
     });
-    console.log("Detected Text: ", text);
+    console.log('Detected Text: ', text);
     const ans = equationSolver(text);
     return ans;
   } catch (error) {

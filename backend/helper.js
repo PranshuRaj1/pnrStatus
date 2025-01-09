@@ -1,7 +1,7 @@
-import tesseract from "tesseract.js";
-import axios from "axios";
-import sharp from "sharp";
-import fs from "fs";
+import tesseract from 'tesseract.js';
+import axios from 'axios';
+import sharp from 'sharp';
+import fs from 'fs';
 
 /**
  * Solves a simple arithmetic equation (e.g., "12+34" or "56-78").
@@ -17,7 +17,7 @@ export function equationSolver(s) {
   const match = beforeEqual.match(equationRegex);
 
   if (!match) {
-    throw new Error("No valid equation found in the string.");
+    throw new Error('No valid equation found in the string.');
   }
 
   // Extract the numbers and operator from the match
@@ -26,15 +26,14 @@ export function equationSolver(s) {
   const second = Number.parseInt(match[3], 10);
 
   // Perform the arithmetic operation
-  if (operator === "+") {
+  if (operator === '+') {
     return first + second;
-  } else if (operator === "-") {
+  } else if (operator === '-') {
     return first - second;
   }
 
-  throw new Error("Unsupported operator.");
+  throw new Error('Unsupported operator.');
 }
-
 
 /**
  * Fetches the CAPTCHA image and extracts the text using Tesseract.js.
@@ -44,7 +43,7 @@ export function equationSolver(s) {
 export async function solveCaptchaInMemory(url) {
   try {
     // Fetch the image as a binary buffer
-    const response = await axios.get(url, { responseType: "arraybuffer" });
+    const response = await axios.get(url, { responseType: 'arraybuffer' });
     const imageBuffer = Buffer.from(response.data);
 
     // Preprocess the image (Grayscale + Thresholding)
@@ -53,19 +52,19 @@ export async function solveCaptchaInMemory(url) {
       .threshold(128) // Apply Otsu's threshold (binarization)
       .toBuffer(); // Get the processed image as a buffer
     // Perform OCR on the processed image buffer
-    const result = await tesseract.recognize(processedImageBuffer, "eng", {
+    const result = await tesseract.recognize(processedImageBuffer, 'eng', {
       logger: (info) => console.log(info), // Optional: Logs OCR progress
-      tessedit_char_whitelist: "0123456789+-s", // Whitelist allowed characters
+      tessedit_char_whitelist: '0123456789+-s', // Whitelist allowed characters
     });
 
     // Clean up the result (remove extra whitespace)
     let captchaText = result.data.text.trim();
-    captchaText = captchaText.replace(/[^0-9+\-]/g, ""); // Remove unwanted characters
+    captchaText = captchaText.replace(/[^0-9+\-]/g, ''); // Remove unwanted characters
 
-    console.log("Extracted CAPTCHA Text:", captchaText);
+    console.log('Extracted CAPTCHA Text:', captchaText);
 
     return captchaText;
   } catch (error) {
-    console.error("Error processing CAPTCHA:", error.message);
+    console.error('Error processing CAPTCHA:', error.message);
   }
 }
