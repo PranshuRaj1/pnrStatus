@@ -2,8 +2,11 @@ import express from 'express';
 import { fetchPnrCookie, fetchPnrStatus } from './index.js';
 import { Builder, By, until } from 'selenium-webdriver';
 import chrome from 'selenium-webdriver/chrome.js';
+import cors from 'cors';
 
 const app = express();
+
+app.use(cors());
 const port = 3000;
 
 const samplePNR = 2326481862;
@@ -14,18 +17,18 @@ app.use(express.json());
 
 app.get('/', async (req, res) => {
   try {
-    const data = req.body;
-    if (!data.pnr) {
+    const { pnr } = req.query; // Get PNR from query parameters
+    if (!pnr) {
       return res.status(400).send({ error: 'PNR number is required' });
     }
 
-    const ans = await fetchPnrStatus(data.pnr, driver); // Pass the driver to fetchPnrStatus
-    const tabs = await driver.getAllWindowHandles(); // Get all open tabs
+    const ans = await fetchPnrStatus(pnr, driver); // Pass the PNR directly
+    const tabs = await driver.getAllWindowHandles();
 
     if (tabs.length > 1) {
-      await driver.switchTo().window(tabs[1]); // Switch to the second tab
-      await driver.close(); // Close the second tab
-      await driver.switchTo().window(tabs[0]); // Switch back to the original tab
+      await driver.switchTo().window(tabs[1]);
+      await driver.close();
+      await driver.switchTo().window(tabs[0]);
     }
 
     res.send(ans);

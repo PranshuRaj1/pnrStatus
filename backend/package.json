@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "axios": "^1.7.9",
+    "cors": "^2.8.5",
     "express": "^4.21.2",
     "irctc-api": "^3.0.4",
     "node-tesseract-ocr": "^2.2.1",
