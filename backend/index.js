@@ -66,6 +66,20 @@ export async function fetchPnrCookie(pnrNumber, driver, startup) {
   }
 }
 
+export async function checkCookie(pnrNumber,driver){
+  await driver.executeScript(
+    `window.open("https://www.indianrail.gov.in/enquiry/CommonCaptcha?inputPnrNo=${pnrNumber}&inputPage=PNR&language=en");`
+  );
+  try{
+  const submitButton = await driver.findElement(By.id('submitPnrNo'));
+  return true;
+  }
+  catch (error) {
+    return false;
+  }
+
+}
+
 export async function fetchPnrStatus(pnrNumber, driver) {
   // Open a new tab and navigate to Google
   await driver.executeScript(
