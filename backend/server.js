@@ -25,7 +25,8 @@
       if(await checkCookie(pnr,driver) === true){
         console.log("Cookie Persists");
       } else {
-        fetchPnrCookie(pnr,driver,false)
+        console.log("cookie diesnt presist, fetching cookie again")
+        await fetchPnrCookie(pnr,driver,false)
       }
 
       const ans = await fetchPnrStatus(pnr, driver); // Pass the PNR directly
